@@ -3,3 +3,6 @@
 ################################################################################
 
 /.vs
+/ConsoleToMVC/.vs/ConsoleToMVC
+/ConsoleToMVC/bin/Debug/netcoreapp3.1
+/ConsoleToMVC/obj
