@@ -1,31 +1,29 @@
 ﻿using ConsoleToMVC.Models;
 using ConsoleToMVC.Repository;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace ConsoleToMVC.Controllers
 {
     public class BookController : Controller
     {
-        //Made a constructor
+
         private readonly BookRepository _bookRepository = null;
-        //Create the instance 
+
         public BookController(BookRepository bookRepository)
         {
             _bookRepository = bookRepository;
         }
-        public ViewResult GetAllBooks()
+        public async Task<ViewResult> GetAllBooks()
         {
-            var data = _bookRepository.GetAllBooks();
+            var data = await _bookRepository.GetAllBooks();
             return View(data);
         }
-
-        public ViewResult GetBook(int id)
+        [Route("book-details/{id}", Name = "bookDetailRoute")]
+        public async Task<ViewResult> GetBook(int id)
         {
-            var data = _bookRepository.GetBook(id);
+            var data = await _bookRepository.GetBookById(id);
             return View(data);
         }
 
@@ -38,9 +36,7 @@ namespace ConsoleToMVC.Controllers
         {
             return _bookRepository.GetBookByPage(NoOfPages);
         }
-
-
-        public ViewResult AddNewBook(bool isSuccess = false, int bookId=0 )
+        public ViewResult AddNewBook(bool isSuccess = false, int bookId = 0)
         {
             ViewBag.IsSuccess = isSuccess;
             ViewBag.BookId = bookId;
@@ -48,15 +44,24 @@ namespace ConsoleToMVC.Controllers
         }
 
         [HttpPost]
-        public IActionResult AddNewBook(BookModel bookModel)
+        public async Task<IActionResult> AddNewBook(BookModel bookModel)
         {
-           int id = _bookRepository.AddNewBook(bookModel);
-            if (id > 0)
+            if (ModelState.IsValid)
             {
-                return RedirectToAction(nameof(AddNewBook) , new { isSuccess= true});
+                int id = await _bookRepository.AddNewBook(bookModel);
+                if (id > 0)
+                {
+                    return RedirectToAction(nameof(AddNewBook), new { isSuccess = true, bookId = id });
+                }
+                return View();
             }
-            return View();
-        }
+            else
+            {
+                ModelState.AddModelError("", " this is my first custom error message");
+                ModelState.AddModelError("", " this is my second custom error message");
+                return View();
+            }
+        } 
     }
 }
 
